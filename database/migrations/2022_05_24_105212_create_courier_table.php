@@ -24,6 +24,9 @@ return new class extends Migration
             $table->unsignedInteger('courier_id');
             $table->string('resi',225);
             $table->string('status',10);
+            $table->string('desc',100);
+            $table->unsignedInteger('weight');
+            $table->unsignedInteger('amount');
             $table->timestamp('start_date');
             $table->timestamp('finish_date');
             $table->timestamps();
@@ -33,8 +36,18 @@ return new class extends Migration
         Schema::create('trackings', function (Blueprint $table) {
             $table->id();
             $table->unsignedInteger('package_id');
-            $table->string('resi',225);
             $table->string('tracking',255);
+            $table->timestamps();
+            $table->foreign('package_id')->references('id')->on('packages');
+
+        });
+        Schema::create('details', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedInteger('package_id');
+            $table->string('origin',100);
+            $table->string('destination',100);
+            $table->string('sender',100);
+            $table->string('reciever',100);
             $table->timestamps();
             $table->foreign('package_id')->references('id')->on('packages');
 
@@ -48,6 +61,7 @@ return new class extends Migration
      */
     public function down()
     {
+        Schema::dropIfExists('details');
         Schema::dropIfExists('trackings');
         Schema::dropIfExists('packages');
         Schema::dropIfExists('couriers');

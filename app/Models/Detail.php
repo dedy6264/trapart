@@ -5,18 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Package extends Model
+class Detail extends Model
 {
     use HasFactory;
     protected $fillable = [
-
-'courier_id',
-'resi',
-'status',
-'weight',
-'amount',
-'start_date',
-'desc',
-        ];
-        
+        'package_id',
+        'origin',
+        'destination',
+        'sender',
+        'reciever',
+                ];
 }
