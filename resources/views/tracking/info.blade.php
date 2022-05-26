@@ -7,22 +7,26 @@
 <h3>Your package is not register</h3>
     
 @else
-<table>
+<table border='1'>
     <thead>
         <tr>
-        <td>Nama Pengiriman</td><td>{{$resi->resi;}}</td>
+        <td>Nama Pengiriman</td><td>{{$resi[0]['courier_name']}}</td>
         </tr>
         <tr>
-        <td>Tgl Pengiriman</td>
+        <td>Tgl Pengiriman</td><td>{{$resi[0]['start_date']}}</td>
         </tr>
         <tr>
-        <td>Alamat Asal</td>
+        <td>Alamat Asal</td><td></td>
         </tr>
     </thead>
     <tbody>
-<tr>
-<td></td>
-</tr>
+        @foreach ($resi[0]['tracking'] as $user)
+   <tr>
+       <td>{{$user['date']}}</td>
+       <td>{{$user['desc']}}</td>
+   </tr>
+@endforeach
+
     </tbody>
 </table>
 @endif

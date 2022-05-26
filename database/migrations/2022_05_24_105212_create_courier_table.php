@@ -24,11 +24,11 @@ return new class extends Migration
             $table->unsignedInteger('courier_id');
             $table->string('resi',225);
             $table->string('status',10);
-            $table->string('desc',100);
-            $table->unsignedInteger('weight');
-            $table->unsignedInteger('amount');
-            $table->timestamp('start_date');
-            $table->timestamp('finish_date');
+            $table->string('desc',100)->default(null)->nullable();
+            $table->string('weight')->nullable();
+            $table->string('amount')->nullable();
+            $table->timestamp('start_date')->default(null)->nullable();
+            $table->timestamp('finish_date')->default(null)->nullable();
             $table->timestamps();
             $table->foreign('courier_id')->references('id')->on('couriers');
 
@@ -36,7 +36,7 @@ return new class extends Migration
         Schema::create('trackings', function (Blueprint $table) {
             $table->id();
             $table->unsignedInteger('package_id');
-            $table->string('tracking',255);
+            $table->string('tracking',255)->nullable();
             $table->timestamps();
             $table->foreign('package_id')->references('id')->on('packages');
 
@@ -44,10 +44,10 @@ return new class extends Migration
         Schema::create('details', function (Blueprint $table) {
             $table->id();
             $table->unsignedInteger('package_id');
-            $table->string('origin',100);
-            $table->string('destination',100);
-            $table->string('sender',100);
-            $table->string('reciever',100);
+            $table->string('origin',100)->nullable();
+            $table->string('destination',100)->nullable();
+            $table->string('sender',100)->nullable();
+            $table->string('reciever',100)->nullable();
             $table->timestamps();
             $table->foreign('package_id')->references('id')->on('packages');
 

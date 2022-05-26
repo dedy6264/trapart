@@ -15,6 +15,16 @@ class PackageController extends Controller
      */
     public function index()
     {
+        // $savePackage=DB::table('packages')->insertGetId([
+        //     'courier_id'=>1,
+        //     'resi'=>"2345erwerw34",
+        //     'status'=>"DELIVERED",
+        //     'weight'=>0,
+        //     'amount'=>0,
+        //     'start_date'=>"2022-09-09 00:00:00",
+        //     'desc'=>"",
+        // ]);
+        // dd($savePackage);
         // return view('tracking.info');
         return view('divisi.content');
     }
@@ -48,6 +58,8 @@ class PackageController extends Controller
                 $response = Http::get($url.$api,$payload)->json();
                 // dd($response['data']['summary']['status']);
                         //jika status success
+                        // dd($response['data']['history'][3]);
+
                     if($response['status']=="200"){
                         // dd($response['data']['summary']);
                         //jika status terkirim
@@ -63,31 +75,49 @@ class PackageController extends Controller
                                 //     'courier_code'=>$response['data']['summary']['courier'],
                                 // ]);
                         $idCourier=$kurir['id'];
-                        $savePackage=DB::table('packages')->insert([
-                            'courier_id'=>$idCourier,
-                            'resi'=>$response['data']['summary']['awb'],
-                            'status'=>$response['data']['summary']['status'],
-                            'weight'=>(int)$response['data']['summary']['weight'],
-                            'amount'=>(int)$response['data']['summary']['amount'],
-                            // 'start_date'=>$response['data']['summary']['date'],
-                            'desc'=>$response['data']['summary']['desc'],
-                        ]);
-                        dd($savePackage);
-                        $idPackage=(int)$savePackage->id;
+                        $startDate=$response['data']['summary']['date'];
+                        if($response['data']['summary']['date']==""){
+                            $startDate=null;
+                        }
+                        // $savePackage=DB::table('packages')->insertGetId([
+                        //     'courier_id'=>$idCourier,
+                        //     'resi'=>$response['data']['summary']['awb'],
+                        //     'status'=>$response['data']['summary']['status'],
+                        //     'weight'=>(int)$response['data']['summary']['weight'],
+                        //     'amount'=>(int)$response['data']['summary']['amount'],
+                        //     'start_date'=>$startDate,
+                        //     'desc'=>$response['data']['summary']['desc'],
+                        //     'created_at'=>now(),
+                        //     'updated_at'=>now(),
+                        // ]);
+                        // dd($savePackage);
+                        // $idPackage=$savePackage;
                         // $saveTracking=
-                        Tracking::create([
-                            'package_id'=>$idPackage,
-                            'tracking'=>$response['data']['history'],
-                        ]);
+                        $tracking=array();
+                        foreach($response['data']['history'] as $his){
+                            array_push($tracking,$his);
+                            // DB::table('trackings')->insert([
+                            //     'package_id'=>$idPackage,
+                            //     'tracking'=>json_encode($his),
+                            //     'created_at'=>now(),
+                            //     'updated_at'=>now(),
+                            // ]);
+                        }
+                        
+                        // dd($tracking);
                         // $saveDetail=
-                        Detail::create([
-                            'package_id'=>$idPackage,
-                            'origin'=>$response['data']['detail']['origin'],
-                            'destination'=>$response['data']['detail']['destination'],
-                            'sender'=>$response['data']['detail']['shipper'],
-                            'reciever'=>$response['data']['detail']['reciever'],
-                        ]);
-                        $resi=$response([
+                        // DB::table('details')->insert([
+                        //     'package_id'=>$idPackage,
+                        //     'origin'=>$response['data']['detail']['origin'],
+                        //     'destination'=>$response['data']['detail']['destination'],
+                        //     'sender'=>$response['data']['detail']['shipper'],
+                        //     'reciever'=>$response['data']['detail']['receiver'],
+                        //     'created_at'=>now(),
+                        //     'updated_at'=>now(),
+                        // ]);
+                        // dd($tracking);
+                        
+                        $resi=array([
                             'courier_name'=>$response['data']['summary']['courier'],
                             'resi'=>$response['data']['summary']['awb'],
                             'status'=>$response['data']['summary']['date'],
@@ -98,9 +128,10 @@ class PackageController extends Controller
                             'origin'=>$response['data']['detail']['origin'],
                             'destination'=>$response['data']['detail']['destination'],
                             'sender'=>$response['data']['detail']['shipper'],
-                            'reciever'=>$response['data']['detail']['reciever'],
-                            'tracking'=>$response['data']['history'],
+                            'reciever'=>$response['data']['detail']['receiver'],
+                            'tracking'=>$tracking,
                         ]);
+                        // dd($resi);
                         return view('tracking.info', compact('resi'));
                             // }
                             
