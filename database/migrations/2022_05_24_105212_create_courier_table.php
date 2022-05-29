@@ -23,7 +23,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedInteger('courier_id');
             $table->string('resi',225);
-            $table->string('status',10);
+            $table->string('status',50);
             $table->string('desc',100)->default(null)->nullable();
             $table->string('weight')->nullable();
             $table->string('amount')->nullable();

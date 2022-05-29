@@ -29,6 +29,7 @@ class PackageController extends Controller
         ->where('couriers.id',$request->kurir)
         ->where('packages.resi',$request->resi)
         ->select('couriers.courier_name',
+        'packages.id',
         'packages.resi',
         'packages.status',
         'details.origin',
@@ -138,9 +139,11 @@ class PackageController extends Controller
 
 
         }
-// dd($resi->status);
 if($resi->status!="DELIVERED"){
-    $a=$this->update_tracking($listKurir->courier_code,$request->resi);
+    
+    $resi=$this->update_tracking($listKurir->courier_code,$resi);
+    return view('tracking.info', compact('resi','c'));
+
 }
         $track=Tracking::join('packages','trackings.package_id','=','packages.id')
         ->where('packages.resi',$request->resi)
@@ -167,7 +170,6 @@ if($resi->status!="DELIVERED"){
                 'tracking'=>$tracking,
             ]);
     
-        // }
         return view('tracking.info', compact('resi','c'));
     }
     public function cek_resi(Request $request)
@@ -176,83 +178,41 @@ if($resi->status!="DELIVERED"){
     }
     public function update_tracking($code,$resi)
     {
-        dump($code);
-        dd($resi);
+        // dd($resi->id);
         $key=env('API_KEY');
             $api="/v1/track";
             $url="https://api.binderbyte.com";
             $payload=[
                 'api_key'=>$key,
                 'courier'=>$code,
-                'awb'=>$resi,
+                'awb'=>$resi->resi,
             ];
                 $response = Http::get($url.$api,$payload)->json();
-                // dd($response['data']['summary']['status']);
-                        //jika status success
-                        // dd($response['data']['history'][3]);
-
-                    if($response['status']=="200"){
-                        // dd($response['data']['summary']);
-                        //jika status terkirim
-                        // if($response['data']['summary']['status']=="DELIVERED"){
-                            //check apakah corier sudah tersimpan
-                            // $courier=Courier::Where('courier_name',$response['data']['summary']['courier'])
-                            // ->select('*')
-                            // ->get();
-                            // if($courier->courier_name==null){
-                                //simpan nama courier jka tidak ditemukan
-                                // $saveCourier=Courier::create([
-                                //     'courier_name'=>$response['data']['summary']['courier'],
-                                //     'courier_code'=>$response['data']['summary']['courier'],
-                                // ]);
-                        // $idCourier=$kurir['id'];
+                        if($response['status']=="200"){
                         $startDate=$response['data']['summary']['date'];
                         if($response['data']['summary']['date']==""){
                             $startDate=null;
                         }
-                        $savePackage=DB::table('packages')->insertGetId([
-                            'courier_id'=>$request->kurir,
-                            'resi'=>$response['data']['summary']['awb'],
-                            'status'=>$response['data']['summary']['status'],
-                            'weight'=>(int)$response['data']['summary']['weight'],
-                            'amount'=>(int)$response['data']['summary']['amount'],
-                            'start_date'=>$startDate,
-                            'desc'=>$response['data']['summary']['desc'],
-                            'created_at'=>now(),
-                            'updated_at'=>now(),
-                        ]);
-                        // // dd($savePackage);
-                        $idPackage=$savePackage;
-                        // $saveTracking=
+                        $package=Package::find($resi->id);
+                        $package->status=$response['data']['summary']['status'];
+                        $package->weight=$response['data']['summary']['weight'];
+                        $package->amount=$response['data']['summary']['amount'];
+                        $package->start_date=$startDate;
+                        $package->desc=$response['data']['summary']['desc'];
+                        $package->save();
+                        Tracking::where('package_id',$resi->id)->delete();
                         $tracking=array();
                         foreach($response['data']['history'] as $his){
                             array_push($tracking,$his);
-                            // $a=json_encode($his);
-                            // $b=json_decode($a);
-                            // dump($a);
-                            // dump($b->date);
-                            // dd($b);     
                             DB::table('trackings')->insert([
-                                'package_id'=>$idPackage,
+                                'package_id'=>$resi->id,
                                 'tracking'=>json_encode($his),
                                 'created_at'=>now(),
                                 'updated_at'=>now(),
                             ]);
                         }
-                        
-                        // dd($tracking);
-                        // $saveDetail=
-                        DB::table('details')->insert([
-                            'package_id'=>$idPackage,
-                            'origin'=>$response['data']['detail']['origin'],
-                            'destination'=>$response['data']['detail']['destination'],
-                            'sender'=>$response['data']['detail']['shipper'],
-                            'reciever'=>$response['data']['detail']['receiver'],
-                            'created_at'=>now(),
-                            'updated_at'=>now(),
-                        ]);
-                        // dd($tracking);
-                        
+                        $detail=Detail::where('package_id',$resi->id);
+                        $detail->update(['reciever'=>$response['data']['detail']['receiver']]);
                         $resi=array([
                             'courier_name'=>$response['data']['summary']['courier'],
                             'resi'=>$response['data']['summary']['awb'],
@@ -267,11 +227,11 @@ if($resi->status!="DELIVERED"){
                             'reciever'=>$response['data']['detail']['receiver'],
                             'tracking'=>$tracking,
                         ]);
-                        return view('tracking.info', compact('resi','c'));
+                        return $resi;
                     
                     }
                     $resi=null;
-                    return view('tracking.info', compact('resi','c'));
+                    return $resi;
     }
     public function send_req()
     {
