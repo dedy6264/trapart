@@ -7,8 +7,8 @@
             <div class="col-lg-4">
                 <div class="features-icons-item mx-auto mb-5 mb-lg-0 mb-lg-3">
                     <div class="features-icons-icon d-flex"><i class="bi-window m-auto text-primary"></i></div>
-                    <h3>Fully Responsive</h3>
-                    <p class="lead mb-0">This theme will look great on any device, no matter the size!</p>
+                    <h3>One Stop Tracking</h3>
+                    <p class="lead mb-0">Ekpedisi apapun bisa kami lacak. Tanpa harus melacak atau mencari website ekspedisi yang anda pakai, langsung bisa anda temukan disini</p>
                 </div>
             </div>
             <div class="col-lg-4">
